@@ -6,29 +6,40 @@ import { encodeURL } from "@solana/pay";
 import { PublicKey } from "@solana/web3.js";
 import BigNumber from "bignumber.js";
 import QRCode from "qrcode";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/Button";
+import { ExternalLink } from "lucide-react";
 
-interface QRCodePaymentProps {
-  quantity: number;
+function isMobile() {
+  if (typeof window === "undefined") return false;
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 }
 
-export function QRCodePayment({ quantity }: QRCodePaymentProps) {
+function buildSolanaPayUrl(quantity: number) {
+  const amount = new BigNumber(DASHCAM_PRICE_SOL).multipliedBy(quantity);
+  const recipient = new PublicKey(MERCHANT_WALLET);
+
+  const memo = `TINA-${Date.now()}|TINA Dashcam Pioneer x${quantity}`;
+
+  const url = encodeURL({
+    recipient,
+    // @ts-expect-error bignumber.js v10 vs v9 type mismatch
+    amount,
+    label: "TINA Dashcam Pre-Order",
+    message: `TINA Dashcam x${quantity} Pioneer Edition`,
+    memo,
+  });
+
+  return url.toString();
+}
+
+function QRCodeView({ quantity }: { quantity: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const amount = new BigNumber(DASHCAM_PRICE_SOL).multipliedBy(quantity);
-    const recipient = new PublicKey(MERCHANT_WALLET);
-
-    const url = encodeURL({
-      recipient,
-      // @ts-expect-error bignumber.js v10 vs v9 type mismatch
-      amount,
-      label: "TINA Dashcam Pre-Order",
-      message: `TINA Dashcam x${quantity} Pioneer Edition`,
-    });
-
+    const url = buildSolanaPayUrl(quantity);
     if (canvasRef.current) {
-      QRCode.toCanvas(canvasRef.current, url.toString(), {
+      QRCode.toCanvas(canvasRef.current, url, {
         width: 256,
         color: {
           dark: "#22d3ee",
@@ -52,4 +63,44 @@ export function QRCodePayment({ quantity }: QRCodePaymentProps) {
       </p>
     </div>
   );
+}
+
+function MobilePayLink({ quantity }: { quantity: number }) {
+  const handleOpen = () => {
+    const url = buildSolanaPayUrl(quantity);
+    window.location.href = url;
+  };
+
+  return (
+    <div className="text-center space-y-4">
+      <p className="text-sm text-text-secondary">
+        Open in your Solana wallet app to pay
+      </p>
+      <Button onClick={handleOpen} variant="secondary" size="lg" className="gap-2">
+        <ExternalLink className="w-4 h-4" />
+        Pay {(DASHCAM_PRICE_SOL * quantity).toFixed(1)} SOL with Wallet App
+      </Button>
+      <p className="text-xs text-text-secondary">
+        Supports Phantom, Solflare, and other Solana Pay wallets
+      </p>
+    </div>
+  );
+}
+
+interface QRCodePaymentProps {
+  quantity: number;
+}
+
+export function QRCodePayment({ quantity }: QRCodePaymentProps) {
+  const [mobile, setMobile] = useState(false);
+
+  useEffect(() => {
+    setMobile(isMobile());
+  }, []);
+
+  if (mobile) {
+    return <MobilePayLink quantity={quantity} />;
+  }
+
+  return <QRCodeView quantity={quantity} />;
 }

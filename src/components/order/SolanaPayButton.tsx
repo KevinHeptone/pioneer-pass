@@ -7,6 +7,7 @@ import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import {
   PublicKey,
   Transaction,
+  TransactionInstruction,
   SystemProgram,
   LAMPORTS_PER_SOL,
 } from "@solana/web3.js";
@@ -28,7 +29,7 @@ export function SolanaPayButton({
   onError,
 }: SolanaPayButtonProps) {
   const { connection } = useConnection();
-  const { publicKey, sendTransaction } = useWallet();
+  const { publicKey, signTransaction, sendTransaction } = useWallet();
   const [loading, setLoading] = useState(false);
 
   const handlePay = async () => {
@@ -43,20 +44,44 @@ export function SolanaPayButton({
       const lamports = amount.multipliedBy(LAMPORTS_PER_SOL).toNumber();
       const recipient = new PublicKey(MERCHANT_WALLET);
 
+      const orderId = `TINA-${Date.now()}`;
+      const memo = `${orderId}|TINA Dashcam Pioneer x${quantity}`;
+
+      const MEMO_PROGRAM_ID = new PublicKey(
+        "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
+      );
+
       const transaction = new Transaction().add(
         SystemProgram.transfer({
           fromPubkey: publicKey,
           toPubkey: recipient,
           lamports,
+        }),
+        new TransactionInstruction({
+          keys: [{ pubkey: publicKey, isSigner: true, isWritable: true }],
+          programId: MEMO_PROGRAM_ID,
+          data: Buffer.from(memo, "utf-8"),
         })
       );
 
-      const { blockhash } = await connection.getLatestBlockhash();
+      const { blockhash, lastValidBlockHeight } =
+        await connection.getLatestBlockhash("confirmed");
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = publicKey;
 
-      const signature = await sendTransaction(transaction, connection);
-      await connection.confirmTransaction(signature, "confirmed");
+      let signature: string;
+
+      if (signTransaction) {
+        const signed = await signTransaction(transaction);
+        signature = await connection.sendRawTransaction(signed.serialize());
+      } else {
+        signature = await sendTransaction(transaction, connection);
+      }
+
+      await connection.confirmTransaction(
+        { signature, blockhash, lastValidBlockHeight },
+        "confirmed"
+      );
 
       onSuccess(signature);
     } catch (err) {

@@ -9,9 +9,14 @@ import { SolanaPayButton } from "@/components/order/SolanaPayButton";
 import { QRCodePayment } from "@/components/order/QRCodePayment";
 import { WalletConnect } from "@/components/order/WalletConnect";
 import { OrderFormData, OrderStatus } from "@/types";
-import { CheckCircle, AlertCircle, QrCode, Wallet } from "lucide-react";
-import { useState } from "react";
+import { CheckCircle, AlertCircle, QrCode, Wallet, Smartphone } from "lucide-react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+
+function isMobile() {
+  if (typeof window === "undefined") return false;
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
 
 const initialFormData: OrderFormData = {
   firstName: "",
@@ -25,6 +30,8 @@ const initialFormData: OrderFormData = {
 };
 
 export default function OrderPage() {
+  const [mobile, setMobile] = useState(false);
+  useEffect(() => { setMobile(isMobile()); }, []);
   const [formData, setFormData] = useState<OrderFormData>(initialFormData);
   const [status, setStatus] = useState<OrderStatus>("form");
   const [paymentMethod, setPaymentMethod] = useState<"wallet" | "qr">(
@@ -119,8 +126,8 @@ export default function OrderPage() {
                       : "border border-border text-text-secondary hover:border-border/80"
                   }`}
                 >
-                  <QrCode size={16} />
-                  QR Code
+                  {mobile ? <Smartphone size={16} /> : <QrCode size={16} />}
+                  {mobile ? "Solana Pay" : "QR Code"}
                 </button>
               </div>
 
