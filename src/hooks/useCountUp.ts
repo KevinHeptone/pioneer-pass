@@ -2,11 +2,14 @@
 
 import { useEffect, useState } from "react";
 
-export function useCountUp(end: number, duration = 2000, start = false) {
+export function useCountUp(end: number, duration = 2000, active = false) {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
-    if (!start) return;
+    if (!active) {
+      setCount(0);
+      return;
+    }
 
     let startTime: number;
     let animationFrame: number;
@@ -24,7 +27,7 @@ export function useCountUp(end: number, duration = 2000, start = false) {
 
     animationFrame = requestAnimationFrame(step);
     return () => cancelAnimationFrame(animationFrame);
-  }, [end, duration, start]);
+  }, [end, duration, active]);
 
   return count;
 }
