@@ -1,6 +1,7 @@
 "use client";
 
 import { NAV_LINKS } from "@/lib/constants";
+import { SOLANA_NETWORK } from "@/lib/solana";
 import { cn } from "@/lib/utils";
 import { Menu, X } from "lucide-react";
 import Image from "next/image";
@@ -37,6 +38,11 @@ export function Navbar() {
               className="rounded-lg"
             />
             <span className="text-lg font-bold text-text-primary">TINA</span>
+            {SOLANA_NETWORK === "devnet" && (
+              <span className="text-[10px] font-mono font-semibold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded-md px-1.5 py-0.5">
+                DEVNET
+              </span>
+            )}
           </Link>
 
           {/* Desktop nav */}
