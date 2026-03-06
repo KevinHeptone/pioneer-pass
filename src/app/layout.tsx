@@ -4,6 +4,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { WalletProvider } from "@/providers/WalletProvider";
 import { FirebaseAnalytics } from "@/components/FirebaseAnalytics";
+import { GeoBlock } from "@/components/GeoBlock";
 import "./globals.css";
 
 const inter = Inter({
@@ -35,12 +36,14 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased bg-background text-text-primary`}
       >
-        <WalletProvider>
-          <FirebaseAnalytics />
-          <Navbar />
-          <main>{children}</main>
-          <Footer />
-        </WalletProvider>
+        <GeoBlock>
+          <WalletProvider>
+            <FirebaseAnalytics />
+            <Navbar />
+            <main>{children}</main>
+            <Footer />
+          </WalletProvider>
+        </GeoBlock>
       </body>
     </html>
   );
