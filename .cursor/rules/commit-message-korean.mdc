@@ -1,0 +1,10 @@
+---
+description: 한글 커밋 메시지 — Conventional Commits + 스킬·슬래시 명령 연동
+alwaysApply: true
+---
+
+# 커밋 메시지 (한국어)
+
+- **제안·작성하는 커밋 메시지는 한국어**로 한다. Conventional Commits 타입(`feat`, `fix` 등)은 유지하고, 콜론 뒤 설명은 한글.
+- 세부 절차·출력 형식(코드 블록 한 개, 불릿 본문, 고유명사 원문 유지 등)은 프로젝트 스킬 **`.cursor/skills/commit-message-korean/SKILL.md`**를 따른다.
+- 사용자가 **영문 초안을 한글로 바꿔** 달라고 할 때는 동일 스킬을 적용하거나, 채팅에서 **`/commit-ko`** 커맨드를 쓰면 된다.
